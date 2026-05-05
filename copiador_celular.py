@@ -11,20 +11,22 @@ class CopiadorApp:
         self.root = root
         self.root.title("Copiador da Tammy")
         self.root.geometry("650x680")
-        self.root.configure(bg="#ffffff")
+        self.root.configure(bg="#FAFAFA")
         
-        # Tema clean
+        # Tema Huashu Design (克制、精致、反AI slop)
         style = ttk.Style()
         style.theme_use('clam')
         
-        # Configuração de cores e fontes
-        style.configure("TFrame", background="#ffffff")
-        style.configure("TLabel", background="#ffffff", font=("Segoe UI", 10))
-        style.configure("Header.TLabel", background="#ffffff", font=("Segoe UI", 16, "bold"), foreground="#333333")
-        style.configure("Action.TButton", font=("Segoe UI", 10, "bold"), padding=8)
-        style.configure("Normal.TButton", font=("Segoe UI", 9), padding=4)
-        style.configure("TProgressbar", thickness=15)
-        style.configure("TCheckbutton", background="#ffffff", font=("Segoe UI", 10))
+        # Configuração de cores e fontes baseada na Information Architecture
+        style.configure("TFrame", background="#FAFAFA")
+        style.configure("TLabel", background="#FAFAFA", font=("Segoe UI", 10), foreground="#4B5563")
+        style.configure("Header.TLabel", background="#FAFAFA", font=("Segoe UI Semilight", 22), foreground="#111827")
+        style.configure("Action.TButton", font=("Segoe UI", 10), padding=10, background="#0F172A", foreground="#FFFFFF", borderwidth=0)
+        style.map("Action.TButton", background=[("active", "#1E293B")])
+        style.configure("Normal.TButton", font=("Segoe UI", 9), padding=6, background="#E5E7EB", foreground="#111827", borderwidth=0)
+        style.map("Normal.TButton", background=[("active", "#D1D5DB")])
+        style.configure("TProgressbar", thickness=6, background="#0F172A", troughcolor="#E5E7EB", borderwidth=0)
+        style.configure("TCheckbutton", background="#FAFAFA", font=("Segoe UI", 10), foreground="#4B5563")
         
         self.is_copying = False
         self.create_widgets()
@@ -70,12 +72,12 @@ class CopiadorApp:
         chk_mover = ttk.Checkbutton(frame_opcoes, text=" Mover arquivos (Apagar do celular após transferir para liberar espaço)", variable=self.var_mover, style="TCheckbutton")
         chk_mover.pack(side=tk.LEFT)
 
-        btn_wifi = ttk.Button(frame_opcoes, text="📡 Conectar Wi-Fi", style="Normal.TButton", command=self.conectar_wifi)
+        btn_wifi = ttk.Button(frame_opcoes, text="Conectar Wi-Fi", style="Normal.TButton", command=self.conectar_wifi)
         btn_wifi.pack(side=tk.RIGHT)
 
         # --- Botão Iniciar ---
-        self.btn_iniciar = ttk.Button(self.root, text="▶ INICIAR TRANSFERÊNCIA", style="Action.TButton", command=self.iniciar_copia)
-        self.btn_iniciar.pack(pady=(15, 20))
+        self.btn_iniciar = ttk.Button(self.root, text="Iniciar Transferência", style="Action.TButton", command=self.iniciar_copia)
+        self.btn_iniciar.pack(pady=(25, 20))
 
         # --- Progresso ---
         frame_progress = ttk.Frame(self.root)
@@ -97,10 +99,12 @@ class CopiadorApp:
             height=10, 
             state='disabled', 
             font=("Consolas", 9),
-            bg="#f8f9fa",
-            fg="#212529",
+            bg="#F3F4F6",
+            fg="#374151",
             relief=tk.FLAT,
-            borderwidth=1
+            borderwidth=0,
+            padx=12,
+            pady=12
         )
         self.log_area.pack(fill=tk.BOTH, expand=True)
 
@@ -118,24 +122,24 @@ class CopiadorApp:
         top = tk.Toplevel(self.root)
         top.title("Navegador do Celular")
         top.geometry("400x500")
-        top.configure(bg="#ffffff")
+        top.configure(bg="#FAFAFA")
         top.transient(self.root)
         top.grab_set()
 
-        ttk.Label(top, text="Selecione a pasta no celular:", font=("Segoe UI", 11, "bold")).pack(pady=(15, 5))
+        ttk.Label(top, text="Selecione a pasta no celular", font=("Segoe UI Semilight", 14), foreground="#111827").pack(pady=(20, 5))
 
         path_var = tk.StringVar(value="/sdcard")
-        ttk.Label(top, textvariable=path_var, font=("Consolas", 10), foreground="#0056b3").pack(pady=5)
+        ttk.Label(top, textvariable=path_var, font=("Consolas", 9), foreground="#6B7280").pack(pady=5)
 
-        frame_list = tk.Frame(top, bg="#e9ecef", padx=1, pady=1)
-        frame_list.pack(fill=tk.BOTH, expand=True, padx=15, pady=5)
+        frame_list = tk.Frame(top, bg="#E5E7EB", padx=1, pady=1)
+        frame_list.pack(fill=tk.BOTH, expand=True, padx=20, pady=10)
         
-        listbox = tk.Listbox(frame_list, font=("Segoe UI", 10), selectmode=tk.SINGLE, relief=tk.FLAT, bg="#ffffff", highlightthickness=0)
+        listbox = tk.Listbox(frame_list, font=("Segoe UI", 10), selectmode=tk.SINGLE, relief=tk.FLAT, bg="#FFFFFF", fg="#111827", highlightthickness=0)
         listbox.pack(fill=tk.BOTH, expand=True)
 
         def carregar_pasta(path):
             listbox.delete(0, tk.END)
-            listbox.insert(tk.END, "📁 .. (Subir)")
+            listbox.insert(tk.END, "  .. (Subir)")
             
             cmd = [self.get_adb_path(), "shell", f"ls -1 '{path}/'"]
             creationflags = subprocess.CREATE_NO_WINDOW if sys.platform == "win32" else 0
@@ -145,7 +149,7 @@ class CopiadorApp:
                     items = [i.strip().replace('\r', '') for i in res.stdout.split('\n') if i.strip()]
                     for item in items:
                         if item and not item.startswith("ls:") and not item.endswith("No such file or directory"):
-                            listbox.insert(tk.END, "📁 " + item)
+                            listbox.insert(tk.END, "  " + item)
             except Exception:
                 pass
 
@@ -154,7 +158,7 @@ class CopiadorApp:
         def on_double_click(event):
             selection = listbox.curselection()
             if not selection: return
-            item = listbox.get(selection[0]).replace("📁 ", "")
+            item = listbox.get(selection[0]).strip()
             
             curr = path_var.get()
             if item == ".. (Subir)":
@@ -190,15 +194,15 @@ class CopiadorApp:
         top = tk.Toplevel(self.root)
         top.title("Conexão Wi-Fi (ADB)")
         top.geometry("450x250")
-        top.configure(bg="#ffffff")
+        top.configure(bg="#FAFAFA")
         top.transient(self.root)
         top.grab_set()
         
         ttk.Label(top, text="1. Ative a 'Depuração sem fio' nas Opções de Desenvolvedor.\n2. Digite abaixo o Endereço IP e Porta exibidos lá no celular.", justify=tk.CENTER, font=("Segoe UI", 10)).pack(pady=20)
         
-        frame_ip = tk.Frame(top, bg="#ffffff")
+        frame_ip = tk.Frame(top, bg="#FAFAFA")
         frame_ip.pack(pady=5)
-        ttk.Label(frame_ip, text="IP:Porta -> ", font=("Segoe UI", 10, "bold")).pack(side=tk.LEFT, padx=5)
+        ttk.Label(frame_ip, text="IP:Porta", font=("Segoe UI Semibold", 10)).pack(side=tk.LEFT, padx=5)
         entry_ip = ttk.Entry(frame_ip, width=22, font=("Segoe UI", 10))
         entry_ip.pack(side=tk.LEFT)
         entry_ip.insert(0, "192.168.0.x:5555")
