@@ -1,7 +1,0 @@
-__pycache__/
-build/
-dist/
-*.spec
-platform-tools/
-platform-tools.zip
-*.exe
